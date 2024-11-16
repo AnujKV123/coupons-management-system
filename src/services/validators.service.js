@@ -27,22 +27,17 @@ export function validateCouponFields(fields) {
   }
 }
 
-export function validateCoupon(coupon) {
-  if (!coupon) throw new ApiError(404, "Coupon not found");
-  if (new Date() > coupon.expiryDate) {
-    throw new ApiError(400, "This coupon has expired");
-  }
-}
 
-export function validateCart(cartItems) {
+export function validateCart({items}) {
+
   if (
-    !cartItems ||
-    !Array.isArray(cartItems) ||
-    !cartItems.every((item) => item.price != null && item.productId != null)
+    !items ||
+    !Array.isArray(items) ||
+    !items.every((item) => item.price != null && item.product_id != null && item.quantity != null)
   ) {
     throw new ApiError(
       400,
-      "Invalid input: cartItems must be an array with price defined"
+      "Invalid input: cartItems must be an array of objects with price, product_id and quantity defined"
     );
   }
 }

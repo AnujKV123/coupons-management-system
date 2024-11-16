@@ -1,20 +1,16 @@
 import {
   validateCart,
-  validateCoupon,
   validateCouponFields,
 } from "../services/validators.service.js";
 import CouponModel from "../models/coupons.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { generateCouponCode } from "../utils/utils.js";
 import { isValidObjectId } from "mongoose";
-import { getApplicableCouponsAggregation } from "../services/couponAggregation.service.js";
 
 // Create a new coupon
 export const createNewCoupon = asyncHandler(async (req, res) => {
   validateCouponFields(req.body);
-  if (!req.body.code) req.body.code = generateCouponCode();
   const newCoupon = new CouponModel(req.body);
   await newCoupon.save();
   return res
@@ -85,9 +81,12 @@ export const deleteCouponById = asyncHandler(async (req, res) => {
 export const fetchApplicableCoupons = asyncHandler(async (req, res) => {
   const { cart } = req.body;
 
-  if (!cart || !cart.items || cart.items.length === 0) {
+  validateCart(cart);
+
+  if (cart.items.length === 0) {
     return res.status(400).json({ message: "Cart is empty or invalid." });
   }
+
   let totalPrice = 0;
 
   // Calculate the total cart price
@@ -199,7 +198,9 @@ export const applyCoupon = asyncHandler(async (req, res) => {
   const { id } = req.params; // Coupon ID
     const { cart } = req.body;
 
-    if (!cart || !cart.items || cart.items.length === 0) {
+    validateCart(cart);
+
+    if (cart.items.length === 0) {
       return res.status(400).json({ message: "Cart is empty or invalid." });
     }
 
